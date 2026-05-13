@@ -16,21 +16,26 @@ export default function InteractiveMeshBackground({ className }: Props) {
     if (!ctx) return;
 
     // ── Physical constants ─────────────────────────────────────────────────
-    const SPACING      = 10;    // px between dots
-    const DOT_R        = 0.4;   // base dot radius (px)
-    const RADIUS       = 110;   // mouse influence radius (px) — wide hot zone
-    const MAX_IMPULSE  = 0.2;   // peak velocity impulse — minimal displacement, effect is mostly colorimetric
-    const SPRING_K     = 0.055; // spring stiffness — snaps back quickly so motion stays subtle
-    const DAMPING      = 0.90;  // velocity damping — clean, no long oscillation
-    const MOUSE_LERP   = 0.29;  // cursor smoothing — cinematic lag
+    let SPACING      = 10;    // px between dots
+    let DOT_R        = 0.4;   // base dot radius (px)
+    let RADIUS       = 110;   // mouse influence radius (px) — wide hot zone
+    let MAX_IMPULSE  = 0.2;   // peak velocity impulse — minimal displacement, effect is mostly colorimetric
+    let SPRING_K     = 0.055; // spring stiffness — snaps back quickly so motion stays subtle
+    let DAMPING      = 0.90;  // velocity damping — clean, no long oscillation
+    let MOUSE_LERP   = 0.29;  // cursor smoothing — cinematic lag
 
     // ── Energy constants ───────────────────────────────────────────────────
     // Each dot stores persistent energy that decays independently of cursor proximity.
     // Glow, color, and radius are driven by energy[], never by direct mouse distance.
     // The trail is the slow decay of energy along the path the cursor traced.
-    const ENERGY_RATE  = 0.20;  // energy injected per frame at full influence — strong hot zone
-    const ENERGY_DECAY = 0.984; // slow decay → ~3 s visible trail at 60 fps (0.984^180 ≈ 0.05)
-    const WAVE_K       = 0.106; // very low diffusion — keeps trail tight along mouse path, not blurred
+    let ENERGY_RATE  = 0.20;  // energy injected per frame at full influence — strong hot zone
+    let ENERGY_DECAY = 0.984; // slow decay → ~3 s visible trail at 60 fps (0.984^180 ≈ 0.05)
+    let WAVE_K       = 0.106; // very low diffusion — keeps trail tight along mouse path, not blurred
+
+    let idleAlphaMin = 0.72;
+    let idleRedBase = 185;
+    let idleGreenBase = 185;
+    let idleBlueBase = 195;
 
     // ── Mutable grid state ─────────────────────────────────────────────────
     let cols = 0, rows = 0, count = 0;
@@ -40,6 +45,7 @@ export default function InteractiveMeshBackground({ className }: Props) {
     let curY    = new Float32Array(0);
     let velX    = new Float32Array(0);
     let velY    = new Float32Array(0);
+    let phase   = new Float32Array(0);
     // Ping-pong buffers for diffusion — swapped each frame to avoid read/write aliasing
     let energy  = new Float32Array(0);
     let energyB = new Float32Array(0);
@@ -51,6 +57,25 @@ export default function InteractiveMeshBackground({ className }: Props) {
 
     // ── Grid initialisation ─────────────────────────────────────────────────
     function initGrid(w: number, h: number): void {
+      const isMobile = w < 768;
+
+      SPACING = isMobile ? 13 : 10;
+      DOT_R = isMobile ? 0.32 : 0.4;
+      RADIUS = isMobile ? 88 : 110;
+      MAX_IMPULSE = isMobile ? 0.12 : 0.2;
+      SPRING_K = isMobile ? 0.05 : 0.055;
+      DAMPING = isMobile ? 0.88 : 0.90;
+      MOUSE_LERP = isMobile ? 0.22 : 0.29;
+
+      ENERGY_RATE = isMobile ? 0.16 : 0.20;
+      ENERGY_DECAY = isMobile ? 0.979 : 0.984;
+      WAVE_K = isMobile ? 0.082 : 0.106;
+
+      idleAlphaMin = isMobile ? 0.60 : 0.72;
+      idleRedBase = isMobile ? 170 : 185;
+      idleGreenBase = isMobile ? 170 : 185;
+      idleBlueBase = isMobile ? 180 : 195;
+
       dpr = window.devicePixelRatio ?? 1;
       // Assigning canvas.width resets the 2D context transform to identity.
       canvas.width  = Math.round(w * dpr);
@@ -69,6 +94,7 @@ export default function InteractiveMeshBackground({ className }: Props) {
       curY    = new Float32Array(count);
       velX    = new Float32Array(count);
       velY    = new Float32Array(count);
+      phase   = new Float32Array(count);
       energy  = new Float32Array(count);
       energyB = new Float32Array(count);
 
@@ -80,6 +106,7 @@ export default function InteractiveMeshBackground({ className }: Props) {
           const i = r * cols + c;
           baseX[i] = ox + c * SPACING;
           baseY[i] = oy + r * SPACING;
+          phase[i] = c * 0.34 + r * 0.47;
           curX[i]  = baseX[i];
           curY[i]  = baseY[i];
         }
@@ -87,7 +114,7 @@ export default function InteractiveMeshBackground({ className }: Props) {
     }
 
     // ── Main animation loop ──────────────────────────────────────────────────
-    function loop(): void {
+    function loop(time: number): void {
       // Cinematic cursor lag
       smoothMouse.x += (rawMouse.x - smoothMouse.x) * MOUSE_LERP;
       smoothMouse.y += (rawMouse.y - smoothMouse.y) * MOUSE_LERP;
@@ -165,10 +192,20 @@ export default function InteractiveMeshBackground({ className }: Props) {
         const e  = Math.min(1, energy[i]);
         // Gamma-correct perceptual curve: square root makes dim glow more visible
         const eg = Math.sqrt(e);
-        const rc = Math.round(185 + eg * 35);  // 185 → 220  near-white → dark orange
-        const gc = Math.round(185 - eg * 60);  // 185 → 95   near-white → warm orange
-        const bc = Math.round(195 - eg * 170); // 195 → 25   near-white → burnt orange shadow
-        const a  = (0.72 + eg * 0.28).toFixed(2); // 0.72 → 1.00 — very visible at rest
+        const distNorm = Math.min(1, dist / RADIUS);
+        // ── Stone-on-water ripple ─────────────────────────────────────────
+        // Traveling wave: rings move outward (distNorm * k - time * speed).
+        // Envelope: (1 - distNorm)² smothers amplitude to zero at the edge,
+        // just like water rings losing energy as they expand.
+        const rippleEnvelope = (1 - distNorm) * (1 - distNorm);
+        const rippleWave     = 0.5 + 0.5 * Math.sin(distNorm * 14 - time * 0.005 + phase[i] * 0.04);
+        const ripplePulse    = rippleWave * rippleEnvelope;
+        const active = Math.max(inf, e);
+        const pulse = 1 + active * ripplePulse * 0.38;
+        const rc = Math.round((idleRedBase + eg * 35) * pulse);   // near-white → dark orange
+        const gc = Math.round((idleGreenBase - eg * 90) * pulse);  // near-white → warm orange
+        const bc = Math.round((idleBlueBase - eg * 170) * pulse);  // near-white → burnt orange shadow
+        const a  = (idleAlphaMin + active * ripplePulse * 0.40 + eg * (0.88 - idleAlphaMin)).toFixed(2); // pulse only when active
         const rr = DOT_R + eg * 0.25;          // subtle size swell with energy
 
         ctx.beginPath();
