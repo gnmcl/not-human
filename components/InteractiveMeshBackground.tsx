@@ -241,7 +241,12 @@ export default function InteractiveMeshBackground({ className }: Props) {
         const rc = Math.round((idleRedBase + eg * 35) * pulse);   // near-white → dark orange
         const gc = Math.round((idleGreenBase - eg * 90) * pulse);  // near-white → warm orange
         const bc = Math.round((idleBlueBase - eg * 170) * pulse);  // near-white → burnt orange shadow
-        const a  = (idleAlphaMin + active * ripplePulse * 0.40 + eg * (0.88 - idleAlphaMin)).toFixed(2); // pulse only when active
+        // ── Idle liquid breath ───────────────────────────────────────────
+        // Slow traveling wave across the mesh — per-dot phase creates a
+        // rippling shimmer without any cursor input. Amplitude is very small
+        // so it reads as a subtle liquid surface, not a visible animation.
+        const idleBreath = Math.sin(time * 0.0014 + phase[i] * 0.18) * 0.10;
+        const a  = Math.max(0, idleAlphaMin + idleBreath + active * ripplePulse * 0.40 + eg * (0.88 - idleAlphaMin)).toFixed(2);
         const rr = DOT_R + eg * 0.25;          // subtle size swell with energy
 
         ctx.beginPath();
