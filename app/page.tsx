@@ -56,6 +56,14 @@ export default function Home() {
           </a>
         </div>
       </div>
+
+      {/* Footer copyright */}
+      <p
+        className="absolute bottom-5 left-0 right-0 z-10 text-center text-[0.55rem] tracking-[0.3em] text-zinc-600 uppercase select-none"
+        style={{ fontFamily: "var(--font-geist-mono)" }}
+      >
+        &copy; {new Date().getFullYear()} Not Human. All rights reserved.
+      </p>
     </section>
   );
 }
