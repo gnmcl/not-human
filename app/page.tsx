@@ -26,7 +26,7 @@ export default function Home() {
         <h1 className="mt-6 text-[2.25rem] tracking-[0.1em] text-zinc-200 uppercase"
           style={{ fontFamily: "var(--font-geist-sans)" }}
         >
-          NOT HUMAN
+          NOT HUMAN.
         </h1>
 
         {/* Tagline */}
