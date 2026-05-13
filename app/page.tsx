@@ -23,10 +23,10 @@ export default function Home() {
           style={{ width: "clamp(132px, 24vw, 220px)", height: "auto" }}
           priority
         />
-        <h1 className="mt-4 text-[1.5rem] tracking-[0.08em] text-zinc-200 uppercase sm:mt-6 sm:text-[2.25rem] sm:tracking-[0.1em]"
-          style={{ fontFamily: "var(--font-geist-sans)" }}
+            <h1 className="mt-4 text-[1.4rem] font-bold tracking-[0.19em] text-zinc-200 uppercase sm:mt-6 sm:text-[2.00rem] sm:tracking-[0.21em]"
+            style={{ fontFamily: "var(--font-geist-sans)", display: "inline-block", transform: "scaleY(0.97)" }}
         >
-          NOT HUMAN.
+          NOT HUMAN
         </h1>
 
         {/* Tagline */}
@@ -59,7 +59,7 @@ export default function Home() {
 
       {/* Footer copyright */}
       <p
-        className="absolute bottom-5 left-0 right-0 z-10 text-center text-[0.55rem] tracking-[0.3em] text-zinc-600 uppercase select-none"
+        className="absolute bottom-5 left-0 right-0 z-10 text-center text-[0.55rem] tracking-[0.3em] text-zinc-500 uppercase select-none"
         style={{ fontFamily: "var(--font-geist-mono)" }}
       >
         &copy; {new Date().getFullYear()} Not Human. All rights reserved.
