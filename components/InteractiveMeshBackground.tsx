@@ -55,6 +55,12 @@ export default function InteractiveMeshBackground({ className }: Props) {
     let rafId = 0;
     let dpr   = 1;
 
+    // ── Ghost cursor (mobile only) ─────────────────────────────────────────
+    // Wanders between random waypoints, feeding rawMouse so the energy system
+    // behaves identically to a real cursor — leaving genuine scie.
+    let isMobileMode = false;
+    const ghost = { x: 0, y: 0, tx: 0, ty: 0, speed: 1.8 };
+
     // ── Grid initialisation ─────────────────────────────────────────────────
     function initGrid(w: number, h: number): void {
       const isMobile = w < 768;
@@ -98,6 +104,16 @@ export default function InteractiveMeshBackground({ className }: Props) {
       energy  = new Float32Array(count);
       energyB = new Float32Array(count);
 
+      // Initialise ghost position in the centre, first target random
+      isMobileMode = isMobile;
+      if (isMobile) {
+        ghost.x  = w * 0.5;
+        ghost.y  = h * 0.5;
+        ghost.tx = 40 + Math.random() * (w - 80);
+        ghost.ty = 40 + Math.random() * (h - 80);
+        ghost.speed = 1.4 + Math.random() * 1.4;
+      }
+
       const ox = (w % SPACING) / 2 + SPACING / 2;
       const oy = (h % SPACING) / 2 + SPACING / 2;
 
@@ -115,6 +131,26 @@ export default function InteractiveMeshBackground({ className }: Props) {
 
     // ── Main animation loop ──────────────────────────────────────────────────
     function loop(time: number): void {
+      // ── Ghost cursor update (mobile) ─────────────────────────────────────
+      if (isMobileMode) {
+        const gdx  = ghost.tx - ghost.x;
+        const gdy  = ghost.ty - ghost.y;
+        const gdist = Math.sqrt(gdx * gdx + gdy * gdy);
+        if (gdist < 36) {
+          // Pick a new waypoint and speed each time we arrive
+          const w2 = canvas.width / dpr;
+          const h2 = canvas.height / dpr;
+          ghost.tx    = 40 + Math.random() * (w2 - 80);
+          ghost.ty    = 40 + Math.random() * (h2 - 80);
+          ghost.speed = 1.2 + Math.random() * 2.2;
+        } else {
+          ghost.x += (gdx / gdist) * ghost.speed;
+          ghost.y += (gdy / gdist) * ghost.speed;
+        }
+        rawMouse.x = ghost.x;
+        rawMouse.y = ghost.y;
+      }
+
       // Cinematic cursor lag
       smoothMouse.x += (rawMouse.x - smoothMouse.x) * MOUSE_LERP;
       smoothMouse.y += (rawMouse.y - smoothMouse.y) * MOUSE_LERP;
