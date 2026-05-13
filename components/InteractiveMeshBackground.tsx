@@ -48,12 +48,15 @@ export default function InteractiveMeshBackground({ className }: Props) {
 
     const nodes: BreathNode[] = [];
 
-    function spawnNode(time: number, w: number, h: number): BreathNode {
+    // vw/vh = visible viewport dims; nodes spawn centred in the 2× canvas
+    function spawnNode(time: number, vw: number, vh: number): BreathNode {
       const sigma = SIGMA_MIN + Math.random() * (SIGMA_MAX - SIGMA_MIN);
       const margin = sigma * 0.5;
+      const padX = vw / 2;  // viewport starts at vw/2 in canvas-space
+      const padY = vh / 2;
       return {
-        x:          margin + Math.random() * (w - 2 * margin),
-        y:          margin + Math.random() * (h - 2 * margin),
+        x:          padX + margin + Math.random() * (vw - 2 * margin),
+        y:          padY + margin + Math.random() * (vh - 2 * margin),
         birthTime:  time,
         lifetime:   LIFE_MIN + Math.random() * (LIFE_MAX - LIFE_MIN),
         pulseFreq:  FREQ_MIN + Math.random() * (FREQ_MAX - FREQ_MIN),
@@ -76,21 +79,28 @@ export default function InteractiveMeshBackground({ className }: Props) {
       BASE_ALPHA = mobile ? 0.70 : 0.82;
       Z_AMP      = mobile ? 170  : 260;
 
+      // Canvas is 2× viewport — mesh edges always stay off-screen
+      const cw = w * 2;
+      const ch = h * 2;
+
       dpr = window.devicePixelRatio ?? 1;
-      canvas.width        = Math.round(w * dpr);
-      canvas.height       = Math.round(h * dpr);
-      canvas.style.width  = `${w}px`;
-      canvas.style.height = `${h}px`;
+      canvas.width        = Math.round(cw * dpr);
+      canvas.height       = Math.round(ch * dpr);
+      canvas.style.width  = `${cw}px`;
+      canvas.style.height = `${ch}px`;
+      // Center the oversized canvas on the viewport
+      canvas.style.left   = `-${w / 2}px`;
+      canvas.style.top    = `-${h / 2}px`;
       ctx.scale(dpr, dpr);
 
-      cols  = Math.floor(w / SPACING);
-      rows  = Math.floor(h / SPACING);
+      cols  = Math.ceil(cw / SPACING) + 1;
+      rows  = Math.ceil(ch / SPACING) + 1;
       count = cols * rows;
       baseX = new Float32Array(count);
       baseY = new Float32Array(count);
 
-      const ox = (w % SPACING) / 2 + SPACING / 2;
-      const oy = (h % SPACING) / 2 + SPACING / 2;
+      const ox = -SPACING / 2;
+      const oy = -SPACING / 2;
       for (let r = 0; r < rows; r++) {
         for (let c = 0; c < cols; c++) {
           const i = r * cols + c;
@@ -102,13 +112,16 @@ export default function InteractiveMeshBackground({ className }: Props) {
 
     // ── Loop di animazione ─────────────────────────────────────────────────
     function loop(time: number): void {
-      const w = canvas.width  / dpr;
-      const h = canvas.height / dpr;
-      ctx.clearRect(0, 0, w, h);
+      const cw = canvas.width  / dpr;
+      const ch = canvas.height / dpr;
+      // Visible viewport dimensions = half the canvas
+      const vw = cw / 2;
+      const vh = ch / 2;
+      ctx.clearRect(0, 0, cw, ch);
 
       // Seeding iniziale: nodi a età diverse così non partono tutti insieme
       while (nodes.length < MAX_NODES) {
-        const n = spawnNode(time, w, h);
+        const n = spawnNode(time, vw, vh);
         n.birthTime = time - Math.random() * n.lifetime * 0.8;
         nodes.push(n);
       }
@@ -117,12 +130,13 @@ export default function InteractiveMeshBackground({ className }: Props) {
       for (let n = nodes.length - 1; n >= 0; n--) {
         if (time - nodes[n].birthTime >= nodes[n].lifetime) {
           nodes.splice(n, 1);
-          nodes.push(spawnNode(time, w, h));
+          nodes.push(spawnNode(time, vw, vh));
         }
       }
 
-      const cx = w * 0.5;
-      const cy = h * 0.5;
+      // Canvas center = viewport center (canvas is 2× viewport, centered)
+      const cx = cw * 0.5;
+      const cy = ch * 0.5;
 
       for (let i = 0; i < count; i++) {
         const bx = baseX[i];
@@ -188,9 +202,6 @@ export default function InteractiveMeshBackground({ className }: Props) {
       className={className}
       style={{
         position: "fixed",
-        inset: 0,
-        width: "100vw",
-        height: "100vh",
         display: "block",
       }}
     />
