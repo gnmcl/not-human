@@ -6,6 +6,16 @@ interface Props {
   className?: string;
 }
 
+interface BreathNode {
+  x: number;
+  y: number;
+  birthTime: number;
+  lifetime: number;   // ms — durata totale
+  pulseFreq: number;  // rad/ms — velocità del respiro
+  pulsePhase: number; // sfasamento iniziale — ognuno respira a modo suo
+  sigma2: number;     // raggio di influenza² (gaussiana)
+}
+
 export default function InteractiveMeshBackground({ className }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -15,35 +25,42 @@ export default function InteractiveMeshBackground({ className }: Props) {
     const ctx = canvas.getContext("2d")!;
     if (!ctx) return;
 
-    // ── Grid ───────────────────────────────────────────────────────────────
-    let SPACING = 10;
-    let DOT_R   = 0.55;
+    // ── Griglia ────────────────────────────────────────────────────────────
+    let SPACING    = 10;
+    let DOT_R      = 0.55;
     let BASE_ALPHA = 0.82;
     const R = 185, G = 185, B = 195;
 
-    // ── Prospettiva ─────────────────────────────────────────────────────────
-    const FOCAL = 520;
-    let   Z_AMP = 200;
+    // ── Prospettiva ────────────────────────────────────────────────────────
+    const FOCAL = 500;
+    let   Z_AMP = 260;
 
-    // ── Onde di respiro ────────────────────────────────────────────────────
-    // Due onde con rapporto di frequenza irrazionale (≈ φ = 1.618):
-    // non si sincronizzano mai → il pattern non si ripete mai uguale,
-    // esattamente come un respiro reale che cambia leggermente ogni volta.
-    //
-    // W1 — onda primaria, lenta, quasi orizzontale
-    //      kx=0.0040 → λ ≈ 1570 px (leggermente più largo dello schermo)
-    //      speed=0.00022 → ciclo temporale ≈ 28 s
-    const W1 = { kx: 0.0040, ky: 0.0005, speed: 0.00022 };
-    //
-    // W2 — onda secondaria, inarmonica (speed ≈ W1/φ), angolata diversamente
-    //      Interferisce con W1 creando creste che si spostano organicamente.
-    const W2 = { kx: 0.0025, ky: 0.0013, speed: 0.00014 };
+    // ── Nodi di respiro ────────────────────────────────────────────────────
+    // Ogni nodo è una "bolla" che emerge in un punto casuale del tessuto,
+    // spinge i punti vicini verso lo schermo, poi svanisce.
+    const MAX_NODES  = 5;
+    const SIGMA_MIN  = 160;     // px — bolla piccola
+    const SIGMA_MAX  = 380;     // px — bolla grande
+    const LIFE_MIN   = 6000;    // ms
+    const LIFE_MAX   = 13000;   // ms
+    const FREQ_MIN   = 0.00040; // rad/ms → periodo ≈ 15 s (respiro lento)
+    const FREQ_MAX   = 0.00085; // rad/ms → periodo ≈  7 s (respiro più rapido)
 
-    // ── Inviluppo di respiro globale ───────────────────────────────────────
-    // Un'unica sinusoide lentissima che fa pulsare l'INTERO campo in/out.
-    // È l'"inspirazione" e l'"espirazione" dell'insieme.
-    // Periodo ≈ 2π / 0.00068 ≈ 9.2 s — ritmo simile a un respiro lento.
-    const BREATH_FREQ = 0.00068;
+    const nodes: BreathNode[] = [];
+
+    function spawnNode(time: number, w: number, h: number): BreathNode {
+      const sigma = SIGMA_MIN + Math.random() * (SIGMA_MAX - SIGMA_MIN);
+      const margin = sigma * 0.5;
+      return {
+        x:          margin + Math.random() * (w - 2 * margin),
+        y:          margin + Math.random() * (h - 2 * margin),
+        birthTime:  time,
+        lifetime:   LIFE_MIN + Math.random() * (LIFE_MAX - LIFE_MIN),
+        pulseFreq:  FREQ_MIN + Math.random() * (FREQ_MAX - FREQ_MIN),
+        pulsePhase: Math.random() * Math.PI * 2,
+        sigma2:     sigma * sigma,
+      };
+    }
 
     // ── Stato griglia ──────────────────────────────────────────────────────
     let cols = 0, rows = 0, count = 0;
@@ -52,13 +69,12 @@ export default function InteractiveMeshBackground({ className }: Props) {
     let rafId = 0;
     let dpr   = 1;
 
-    // ── Inizializzazione griglia ────────────────────────────────────────────
     function initGrid(w: number, h: number): void {
-      const mobile  = w < 768;
-      SPACING       = mobile ? 13  : 10;
-      DOT_R         = mobile ? 0.44 : 0.55;
-      BASE_ALPHA    = mobile ? 0.70 : 0.82;
-      Z_AMP         = mobile ? 140  : 200;
+      const mobile = w < 768;
+      SPACING    = mobile ? 13   : 10;
+      DOT_R      = mobile ? 0.44 : 0.55;
+      BASE_ALPHA = mobile ? 0.70 : 0.82;
+      Z_AMP      = mobile ? 170  : 260;
 
       dpr = window.devicePixelRatio ?? 1;
       canvas.width        = Math.round(w * dpr);
@@ -90,7 +106,21 @@ export default function InteractiveMeshBackground({ className }: Props) {
       const h = canvas.height / dpr;
       ctx.clearRect(0, 0, w, h);
 
-      // Punto di fuga: centro dello schermo
+      // Seeding iniziale: nodi a età diverse così non partono tutti insieme
+      while (nodes.length < MAX_NODES) {
+        const n = spawnNode(time, w, h);
+        n.birthTime = time - Math.random() * n.lifetime * 0.8;
+        nodes.push(n);
+      }
+
+      // Riciclo: rimpiazza i nodi scaduti
+      for (let n = nodes.length - 1; n >= 0; n--) {
+        if (time - nodes[n].birthTime >= nodes[n].lifetime) {
+          nodes.splice(n, 1);
+          nodes.push(spawnNode(time, w, h));
+        }
+      }
+
       const cx = w * 0.5;
       const cy = h * 0.5;
 
@@ -98,45 +128,36 @@ export default function InteractiveMeshBackground({ className }: Props) {
         const bx = baseX[i];
         const by = baseY[i];
 
-        // ── Inviluppo globale di respiro ───────────────────────────────────
-        // Pulsa lentamente tra 0.28 e 1.0 — "inspira" ed "espira" l'intero campo.
-        // Usiamo (sin+1)/2 per stare sempre in [0,1] poi scaliamo.
-        const breathEnv = 0.28 + 0.72 * (0.5 + 0.5 * Math.sin(BREATH_FREQ * time));
+        // Somma dei contributi Z di tutti i nodi attivi
+        let waveZ = 0;
+        for (let n = 0; n < nodes.length; n++) {
+          const nd  = nodes[n];
+          const age = (time - nd.birthTime) / nd.lifetime; // 0 → 1
 
-        // ── Composizione delle due onde di respiro ────────────────────────
-        // I pesi (0.65 + 0.35) e le frequenze irrazionali creano
-        // un'interferenza che si evolve senza mai ripetersi.
-        const p1 = W1.kx * bx + W1.ky * by - W1.speed * time;
-        const p2 = W2.kx * bx + W2.ky * by - W2.speed * time;
-        const wave = 0.65 * Math.sin(p1) + 0.35 * Math.sin(p2);
+          // Inviluppo: sin(π·age) — sale da 0, picco a metà vita, torna a 0.
+          // Ogni bolla emerge e svanisce con dolcezza, senza scatti.
+          const env = Math.sin(Math.PI * age);
 
-        // ── Coordinata Z virtuale ──────────────────────────────────────────
-        // L'inviluppo scala l'ampiezza totale: quando "espira" i punti
-        // restano tutti più vicini al piano → campo quasi piatto.
-        // Quando "inspira" l'onda di profonditá torna in piena forza.
-        const waveZ = -Z_AMP * wave * breathEnv;
+          // Falloff gaussiano: influenza massima al centro, zero a distanza
+          const dx = bx - nd.x;
+          const dy = by - nd.y;
+          const influence = Math.exp(-(dx * dx + dy * dy) / (2 * nd.sigma2));
 
-        // ── Proiezione prospettica ─────────────────────────────────────
-        // Formula classica: persp = f / (f + z)
-        // La camera è a z = -FOCAL, il piano di schermo a z = 0.
-        // persp > 1  →  punto davanti al piano (verso di noi)
-        // persp < 1  →  punto dietro il piano  (lontano da noi)
-        //
-        // EFFETTO CHIAVE: i punti vicini divergono dal centro,
-        // quelli lontani convergono verso il centro.
-        // È questa variazione di POSIZIONE che il cervello legge come 3D.
+          // Pulsazione propria: ogni nodo "respira" al suo ritmo
+          const pulse = Math.sin(nd.pulseFreq * time + nd.pulsePhase);
+
+          waveZ += -Z_AMP * influence * env * pulse;
+        }
+
+        // Proiezione prospettica: persp > 1 = vicino, persp < 1 = lontano
         const persp = FOCAL / (FOCAL + waveZ);
 
-        // Posizione proiettata
+        // I punti divergono dal centro quando si avvicinano (effetto 3D reale)
         const px = cx + (bx - cx) * persp;
         const py = cy + (by - cy) * persp;
 
-        // ── Raggio: scala con la prospettiva (fisica 3D corretta) ──────
         const r = DOT_R * persp;
-
-        // ── Opacità: nebbia di profondità ──────────────────────────────
-        // I punti lontani svaniscono leggermente (nebbia atmosferica).
-        const a = BASE_ALPHA * Math.min(1.0, Math.max(0.14, persp * 0.82));
+        const a = BASE_ALPHA * Math.min(1.0, Math.max(0.12, persp * 0.80));
 
         ctx.beginPath();
         ctx.arc(px, py, Math.max(0.05, r), 0, Math.PI * 2);
