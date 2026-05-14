@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-const PHRASE = "A living signal from the edge of the machine";
+const PHRASE = "A LIVING SIGNAL FROM THE EDGE OF THE MACHINE";
 const TYPE_SPEED_MS = 55; // delay per character
 const START_DELAY_MS = 400;
 
@@ -53,7 +53,7 @@ export default function TerminalTagline() {
 
   return (
     <div
-      className="mt-5 w-full max-w-[20rem] text-left text-[0.6rem] leading-relaxed text-zinc-300 sm:mt-8 sm:max-w-[34rem] sm:text-[0.72rem]"
+      className="mx-auto mt-5 w-full max-w-[20rem] text-center text-left text-[0.65rem] leading-relaxed text-zinc-300 sm:mt-8 sm:max-w-[36rem] sm:text-[0.8rem]"
       style={{ fontFamily: "var(--font-geist-mono)" }}
       aria-label={PHRASE}
     >
