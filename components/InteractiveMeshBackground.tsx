@@ -38,13 +38,15 @@ export default function InteractiveMeshBackground({ className }: Props) {
     // ── Nodi di respiro ────────────────────────────────────────────────────
     // Ogni nodo è una "bolla" che emerge in un punto casuale del tessuto,
     // spinge i punti vicini verso lo schermo, poi svanisce.
-    const MAX_NODES  = 5;
-    const SIGMA_MIN  = 160;     // px — bolla piccola
-    const SIGMA_MAX  = 380;     // px — bolla grande
-    const LIFE_MIN   = 6000;    // ms
-    const LIFE_MAX   = 13000;   // ms
-    const FREQ_MIN   = 0.00040; // rad/ms → periodo ≈ 15 s (respiro lento)
-    const FREQ_MAX   = 0.00085; // rad/ms → periodo ≈  7 s (respiro più rapido)
+    // Tante bolle piccole = effetto lenzuolo armonioso, senza picchi violenti.
+    let MAX_NODES = 10;
+    let SIGMA_MIN = 95;        // px — bolla piccola
+    let SIGMA_MAX = 200;       // px — bolla media
+    const LIFE_MIN = 7000;     // ms
+    const LIFE_MAX = 14000;    // ms
+    // Frequenze ravvicinate → respiro più sinfonico, meno caotico
+    const FREQ_MIN = 0.00050;  // rad/ms → periodo ≈ 12.5 s
+    const FREQ_MAX = 0.00075;  // rad/ms → periodo ≈  8.4 s
 
     const nodes: BreathNode[] = [];
 
@@ -74,10 +76,16 @@ export default function InteractiveMeshBackground({ className }: Props) {
 
     function initGrid(w: number, h: number): void {
       const mobile = w < 768;
-      SPACING    = mobile ? 13   : 10;
-      DOT_R      = mobile ? 0.44 : 0.55;
-      BASE_ALPHA = mobile ? 0.70 : 0.82;
-      Z_AMP      = mobile ? 170  : 260;
+      SPACING    = mobile ? 11   : 10;
+      DOT_R      = mobile ? 0.42 : 0.55;
+      BASE_ALPHA = mobile ? 0.72 : 0.82;
+      // Ampiezza Z più contenuta = picchi meno violenti, lenzuolo più dolce
+      Z_AMP      = mobile ? 130  : 180;
+      // Su mobile: bolle scalate al viewport per restare proporzionate,
+      // più numerose e piccole per un movimento delicato e leggibile.
+      MAX_NODES  = mobile ? 8    : 10;
+      SIGMA_MIN  = mobile ? 70   : 95;
+      SIGMA_MAX  = mobile ? 140  : 200;
 
       // Canvas is 2× viewport — mesh edges always stay off-screen
       const cw = w * 2;
