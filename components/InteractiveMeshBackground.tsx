@@ -33,30 +33,31 @@ export default function InteractiveMeshBackground({ className }: Props) {
 
     // ── Prospettiva ────────────────────────────────────────────────────────
     const FOCAL = 500;
-    let   Z_AMP = 260;
+    let   Z_AMP = 180;
 
     // ── Nodi di respiro ────────────────────────────────────────────────────
     // Ogni nodo è una "bolla" che emerge in un punto casuale del tessuto,
     // spinge i punti vicini verso lo schermo, poi svanisce.
-    const MAX_NODES  = 5;
-    const SIGMA_MIN  = 160;     // px — bolla piccola
-    const SIGMA_MAX  = 380;     // px — bolla grande
-    const LIFE_MIN   = 6000;    // ms
-    const LIFE_MAX   = 13000;   // ms
-    const FREQ_MIN   = 0.00040; // rad/ms → periodo ≈ 15 s (respiro lento)
-    const FREQ_MAX   = 0.00085; // rad/ms → periodo ≈  7 s (respiro più rapido)
+    // Tante bolle piccole = effetto lenzuolo armonioso, senza picchi violenti.
+    let MAX_NODES = 10;
+    let SIGMA_MIN = 95;        // px — bolla piccola
+    let SIGMA_MAX = 200;       // px — bolla media
+    const LIFE_MIN = 7000;     // ms
+    const LIFE_MAX = 14000;    // ms
+    // Frequenze ravvicinate → respiro più sinfonico, meno caotico
+    const FREQ_MIN = 0.00050;  // rad/ms → periodo ≈ 12.5 s
+    const FREQ_MAX = 0.00075;  // rad/ms → periodo ≈  8.4 s
 
     const nodes: BreathNode[] = [];
 
-    // vw/vh = visible viewport dims; nodes spawn centred in the 2× canvas
+    // Le bolle nascono ben dentro al viewport, lontano dai bordi.
+    // Così la maschera di bordo non azzera mai una bolla appena nata.
     function spawnNode(time: number, vw: number, vh: number): BreathNode {
-      const sigma = SIGMA_MIN + Math.random() * (SIGMA_MAX - SIGMA_MIN);
-      const margin = sigma * 0.5;
-      const padX = vw / 2;  // viewport starts at vw/2 in canvas-space
-      const padY = vh / 2;
+      const sigma  = SIGMA_MIN + Math.random() * (SIGMA_MAX - SIGMA_MIN);
+      const margin = sigma * 0.9;
       return {
-        x:          padX + margin + Math.random() * (vw - 2 * margin),
-        y:          padY + margin + Math.random() * (vh - 2 * margin),
+        x:          margin + Math.random() * (vw - 2 * margin),
+        y:          margin + Math.random() * (vh - 2 * margin),
         birthTime:  time,
         lifetime:   LIFE_MIN + Math.random() * (LIFE_MAX - LIFE_MIN),
         pulseFreq:  FREQ_MIN + Math.random() * (FREQ_MAX - FREQ_MIN),
@@ -69,55 +70,72 @@ export default function InteractiveMeshBackground({ className }: Props) {
     let cols = 0, rows = 0, count = 0;
     let baseX = new Float32Array(0);
     let baseY = new Float32Array(0);
+    // Maschera di bordo: 1 al centro, 0 ai bordi — i punti perimetrali
+    // restano ancorati come spilli che fissano il lenzuolo alla finestra.
+    let edgeMask = new Float32Array(0);
     let rafId = 0;
     let dpr   = 1;
+    let vw = 0, vh = 0;
 
     function initGrid(w: number, h: number): void {
       const mobile = w < 768;
-      SPACING    = mobile ? 13   : 10;
-      DOT_R      = mobile ? 0.44 : 0.55;
-      BASE_ALPHA = mobile ? 0.70 : 0.82;
-      Z_AMP      = mobile ? 170  : 260;
+      SPACING    = mobile ? 11   : 10;
+      DOT_R      = mobile ? 0.42 : 0.55;
+      BASE_ALPHA = mobile ? 0.72 : 0.82;
+      Z_AMP      = mobile ? 130  : 180;
+      MAX_NODES  = mobile ? 8    : 10;
+      SIGMA_MIN  = mobile ? 70   : 95;
+      SIGMA_MAX  = mobile ? 140  : 200;
 
-      // Canvas is 2× viewport — mesh edges always stay off-screen
-      const cw = w * 2;
-      const ch = h * 2;
+      vw = w;
+      vh = h;
 
       dpr = window.devicePixelRatio ?? 1;
-      canvas.width        = Math.round(cw * dpr);
-      canvas.height       = Math.round(ch * dpr);
-      canvas.style.width  = `${cw}px`;
-      canvas.style.height = `${ch}px`;
-      // Center the oversized canvas on the viewport
-      canvas.style.left   = `-${w / 2}px`;
-      canvas.style.top    = `-${h / 2}px`;
-      ctx.scale(dpr, dpr);
+      canvas.width        = Math.round(w * dpr);
+      canvas.height       = Math.round(h * dpr);
+      canvas.style.width  = `${w}px`;
+      canvas.style.height = `${h}px`;
+      canvas.style.left   = "0";
+      canvas.style.top    = "0";
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-      cols  = Math.ceil(cw / SPACING) + 1;
-      rows  = Math.ceil(ch / SPACING) + 1;
+      // La griglia copre esattamente il viewport: la prima e l'ultima
+      // colonna/riga di punti coincidono con i bordi della finestra.
+      cols  = Math.floor(w / SPACING) + 1;
+      rows  = Math.floor(h / SPACING) + 1;
       count = cols * rows;
-      baseX = new Float32Array(count);
-      baseY = new Float32Array(count);
+      baseX    = new Float32Array(count);
+      baseY    = new Float32Array(count);
+      edgeMask = new Float32Array(count);
 
-      const ox = -SPACING / 2;
-      const oy = -SPACING / 2;
+      // Distribuiamo i punti in modo che cadano esattamente su x=0, x=w,
+      // y=0, y=h. I bordi del lenzuolo restano sempre allineati al frame.
+      const stepX = w / (cols - 1);
+      const stepY = h / (rows - 1);
+
+      // Maschera: sin(π·u) elevato per avere bordi piatti e cuore ampio.
+      // Esponente più basso = "cuore" attivo più largo, così le bolle
+      // vicino ai bordi non vengono spente e i movimenti restano visibili
+      // in più punti del telo contemporaneamente.
+      const MASK_POW = 1.15;
+
       for (let r = 0; r < rows; r++) {
+        const v = r / (rows - 1);            // 0 → 1
+        const maskV = Math.sin(Math.PI * v); // 0 ai bordi, 1 al centro
         for (let c = 0; c < cols; c++) {
+          const u = c / (cols - 1);
+          const maskU = Math.sin(Math.PI * u);
           const i = r * cols + c;
-          baseX[i] = ox + c * SPACING;
-          baseY[i] = oy + r * SPACING;
+          baseX[i] = c * stepX;
+          baseY[i] = r * stepY;
+          edgeMask[i] = Math.pow(maskU * maskV, MASK_POW);
         }
       }
     }
 
     // ── Loop di animazione ─────────────────────────────────────────────────
     function loop(time: number): void {
-      const cw = canvas.width  / dpr;
-      const ch = canvas.height / dpr;
-      // Visible viewport dimensions = half the canvas
-      const vw = cw / 2;
-      const vh = ch / 2;
-      ctx.clearRect(0, 0, cw, ch);
+      ctx.clearRect(0, 0, vw, vh);
 
       // Seeding iniziale: nodi a età diverse così non partono tutti insieme
       while (nodes.length < MAX_NODES) {
@@ -134,41 +152,42 @@ export default function InteractiveMeshBackground({ className }: Props) {
         }
       }
 
-      // Canvas center = viewport center (canvas is 2× viewport, centered)
-      const cx = cw * 0.5;
-      const cy = ch * 0.5;
+      // Centro prospettico = centro della finestra
+      const cx = vw * 0.5;
+      const cy = vh * 0.5;
 
       for (let i = 0; i < count; i++) {
-        const bx = baseX[i];
-        const by = baseY[i];
+        const bx   = baseX[i];
+        const by   = baseY[i];
+        const mask = edgeMask[i];
 
         // Somma dei contributi Z di tutti i nodi attivi
         let waveZ = 0;
-        for (let n = 0; n < nodes.length; n++) {
-          const nd  = nodes[n];
-          const age = (time - nd.birthTime) / nd.lifetime; // 0 → 1
+        if (mask > 0) {
+          for (let n = 0; n < nodes.length; n++) {
+            const nd  = nodes[n];
+            const age = (time - nd.birthTime) / nd.lifetime; // 0 → 1
+            const env = Math.sin(Math.PI * age);
 
-          // Inviluppo: sin(π·age) — sale da 0, picco a metà vita, torna a 0.
-          // Ogni bolla emerge e svanisce con dolcezza, senza scatti.
-          const env = Math.sin(Math.PI * age);
+            const dx = bx - nd.x;
+            const dy = by - nd.y;
+            const influence = Math.exp(-(dx * dx + dy * dy) / (2 * nd.sigma2));
 
-          // Falloff gaussiano: influenza massima al centro, zero a distanza
-          const dx = bx - nd.x;
-          const dy = by - nd.y;
-          const influence = Math.exp(-(dx * dx + dy * dy) / (2 * nd.sigma2));
+            const pulse = Math.sin(nd.pulseFreq * time + nd.pulsePhase);
 
-          // Pulsazione propria: ogni nodo "respira" al suo ritmo
-          const pulse = Math.sin(nd.pulseFreq * time + nd.pulsePhase);
-
-          waveZ += -Z_AMP * influence * env * pulse;
+            waveZ += -Z_AMP * influence * env * pulse;
+          }
+          // I punti vicini al bordo vengono "sgonfiati" verso zero.
+          // Sul perimetro (mask = 0) il movimento è nullo: spilli fissi.
+          waveZ *= mask;
         }
 
-        // Proiezione prospettica: persp > 1 = vicino, persp < 1 = lontano
         const persp = FOCAL / (FOCAL + waveZ);
 
-        // I punti divergono dal centro quando si avvicinano (effetto 3D reale)
-        const px = cx + (bx - cx) * persp;
-        const py = cy + (by - cy) * persp;
+        // Anche la divergenza prospettica viene mascherata, così i punti
+        // sui bordi non si spostano lateralmente nemmeno di un pixel.
+        const px = cx + (bx - cx) * (1 + (persp - 1) * mask);
+        const py = cy + (by - cy) * (1 + (persp - 1) * mask);
 
         const r = DOT_R * persp;
         const a = BASE_ALPHA * Math.min(1.0, Math.max(0.12, persp * 0.80));
