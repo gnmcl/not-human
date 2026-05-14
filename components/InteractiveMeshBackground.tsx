@@ -114,8 +114,10 @@ export default function InteractiveMeshBackground({ className }: Props) {
       const stepY = h / (rows - 1);
 
       // Maschera: sin(π·u) elevato per avere bordi piatti e cuore ampio.
-      // Esponente più alto = ancoraggio più stretto al bordo.
-      const MASK_POW = 1.6;
+      // Esponente più basso = "cuore" attivo più largo, così le bolle
+      // vicino ai bordi non vengono spente e i movimenti restano visibili
+      // in più punti del telo contemporaneamente.
+      const MASK_POW = 1.15;
 
       for (let r = 0; r < rows; r++) {
         const v = r / (rows - 1);            // 0 → 1
