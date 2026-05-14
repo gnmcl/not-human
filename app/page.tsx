@@ -1,5 +1,6 @@
 import Image from "next/image";
 import InteractiveMeshBackground from "@/components/InteractiveMeshBackground";
+import TerminalTagline from "@/components/TerminalTagline";
 
 export default function Home() {
   return (
@@ -29,13 +30,8 @@ export default function Home() {
           NOT HUMAN
         </h1>
 
-        {/* Tagline */}
-        <p
-          className="mt-5 max-w-[18rem] text-[0.65rem] leading-relaxed tracking-[0.28em] text-zinc-300 uppercase sm:mt-8 sm:max-w-none sm:text-[0.75rem] sm:tracking-[0.4em]"
-          style={{ fontFamily: "var(--font-geist-mono)" }}
-        >
-          A living signal from the edge of the machine
-        </p>
+        {/* Tagline — terminal style */}
+        <TerminalTagline />
       
 
         {/* CTAs */}
