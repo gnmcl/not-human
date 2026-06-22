@@ -45,7 +45,7 @@ export default function TopNavbar() {
   const [open, setOpen] = useState(false);
 
   return (
-    <header className="fixed inset-x-0 top-0 z-40 border-b border-zinc-800/20">
+    <header className="fixed inset-x-0 top-0 z-40 border-zinc-800/20">
       <div className="mx-auto flex h-14 max-w-screen-2xl items-center justify-between px-4 sm:h-16 sm:px-6">
         {/* Logo */}
         <a href="#hero" aria-label="Back to top" className="inline-flex items-center">
