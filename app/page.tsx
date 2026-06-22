@@ -1,6 +1,7 @@
 import Image from "next/image";
 import InteractiveMeshBackground from "@/components/InteractiveMeshBackground";
 import DatesSection from "@/components/DatesSection";
+import Footer from "@/components/Footer";
 import SectionDotNavigator from "@/components/SectionDotNavigator";
 import TopNavbar from "@/components/TopNavbar";
 import YouTubeHeroSection from "@/components/YouTubeHeroSection";
@@ -69,16 +70,11 @@ export default function Home() {
             </div>
           </div>
 
-          <p
-            className="absolute right-0 bottom-5 left-0 z-10 text-center text-[0.55rem] tracking-[0.3em] text-zinc-500 uppercase select-none"
-            style={{ fontFamily: "var(--font-geist-mono)" }}
-          >
-            &copy; {new Date().getFullYear()} Not Human. All rights reserved.
-          </p>
         </section>
 
         <YouTubeHeroSection id="video" videoId={FEATURED_VIDEO_ID} />
         <DatesSection id="dates" />
+        <Footer />
       </main>
 
       <SectionDotNavigator sections={sections} />

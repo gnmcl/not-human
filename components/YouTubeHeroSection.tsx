@@ -43,10 +43,10 @@ export default function YouTubeHeroSection({ id, videoId }: YouTubeHeroSectionPr
       id={id}
       ref={sectionRef}
       data-scroll-section
-      className="relative z-10 min-h-screen overflow-hidden"
+      className="relative z-10 min-h-screen overflow-hidden bg-black"
       aria-label="Featured video"
     >
-      <div className="pointer-events-none absolute inset-0 z-10 bg-black/35" aria-hidden="true" />
+      <div className="pointer-events-none absolute inset-0 z-10 bg-black/20" aria-hidden="true" />
 
       <div className="absolute inset-0 z-0 flex items-center justify-center p-3 sm:p-6">
         <div className="relative aspect-video w-[80%] overflow-hidden rounded-md border border-zinc-700/60 bg-black sm:h-[80%] sm:w-[80%] sm:aspect-auto">
