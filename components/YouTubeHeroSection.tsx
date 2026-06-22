@@ -49,7 +49,7 @@ export default function YouTubeHeroSection({ id, videoId }: YouTubeHeroSectionPr
       <div className="pointer-events-none absolute inset-0 z-10 bg-black/35" aria-hidden="true" />
 
       <div className="absolute inset-0 z-0 flex items-center justify-center p-3 sm:p-6">
-        <div className="relative h-[80%] w-[80%] overflow-hidden rounded-md border border-zinc-700/60 bg-black">
+        <div className="relative aspect-video w-[80%] overflow-hidden rounded-md border border-zinc-700/60 bg-black sm:h-[80%] sm:w-[80%] sm:aspect-auto">
           {!shouldLoadVideo && (
             <Image
               src={previewUrl}
