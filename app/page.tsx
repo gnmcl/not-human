@@ -2,6 +2,7 @@ import Image from "next/image";
 import InteractiveMeshBackground from "@/components/InteractiveMeshBackground";
 import DatesSection from "@/components/DatesSection";
 import SectionDotNavigator from "@/components/SectionDotNavigator";
+import TopNavbar from "@/components/TopNavbar";
 import YouTubeHeroSection from "@/components/YouTubeHeroSection";
 
 const sections = [
@@ -16,6 +17,7 @@ export default function Home() {
   return (
     <>
       <InteractiveMeshBackground className="pointer-events-none fixed inset-0 z-0 h-screen w-screen" />
+      <TopNavbar />
 
       <main className="relative z-10">
         <section
