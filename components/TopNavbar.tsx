@@ -44,7 +44,7 @@ export default function TopNavbar() {
   const [open, setOpen] = useState(false);
 
   return (
-    <header className="fixed inset-x-0 top-0 z-40 border-b border-zinc-700/30 bg-black/20 backdrop-blur-sm">
+    <header className="fixed inset-x-0 top-0 z-40 border-b border-zinc-800/20">
       <div className="mx-auto flex h-14 max-w-screen-2xl items-center justify-between px-4 sm:h-16 sm:px-6">
         {/* Logo */}
         <a href="#hero" aria-label="Back to top" className="inline-flex items-center">
@@ -90,7 +90,7 @@ export default function TopNavbar() {
       {/* Mobile dropdown */}
       {open && (
         <div
-          className="sm:hidden border-t border-zinc-700/30 bg-black/20 backdrop-blur-sm px-6 py-8 flex flex-col items-center gap-8"
+          className="sm:hidden border-t border-zinc-800/20 px-6 py-8 flex flex-col items-center gap-8"
           role="dialog"
           aria-label="Navigation menu"
         >
