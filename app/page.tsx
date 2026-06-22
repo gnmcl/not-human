@@ -3,6 +3,7 @@ import InteractiveMeshBackground from "@/components/InteractiveMeshBackground";
 import DatesSection from "@/components/DatesSection";
 import Footer from "@/components/Footer";
 import SectionDotNavigator from "@/components/SectionDotNavigator";
+import { primaryButtonClass } from "@/components/buttonStyles";
 import TopNavbar from "@/components/TopNavbar";
 import YouTubeHeroSection from "@/components/YouTubeHeroSection";
 
@@ -55,14 +56,14 @@ export default function Home() {
             <div className="mt-9 flex w-full max-w-xs flex-col gap-3 sm:mt-14 sm:max-w-none sm:flex-row sm:justify-center sm:gap-10">
               <a
                 href="https://linktr.ee/nothumanworld?utm_source=linktree_profile_share&ltsid=ef4c89df-dcdc-4645-84fa-7719000856c3"
-                className="inline-flex w-full items-center justify-center border border-zinc-400 px-8 py-3 text-[0.65rem] tracking-[0.35em] text-zinc-100 uppercase transition-all duration-500 hover:border-red-250 hover:text-red-700 sm:w-auto sm:px-10 sm:py-3.5 sm:text-[0.7rem] sm:tracking-[0.4em]"
+                className={`${primaryButtonClass} w-full opacity-100 sm:w-auto`}
                 style={{ fontFamily: "var(--font-geist-mono)" }}
               >
                 Listen
               </a>
               <a
                 href="#dates"
-                className="inline-flex w-full items-center justify-center border border-zinc-400 px-8 py-3 text-[0.65rem] tracking-[0.35em] text-zinc-100 uppercase transition-all duration-500 hover:border-red-250 hover:text-red-700 sm:w-auto sm:px-10 sm:py-3.5 sm:text-[0.7rem] sm:tracking-[0.4em]"
+                className={`${primaryButtonClass} w-full opacity-100 sm:w-auto`}
                 style={{ fontFamily: "var(--font-geist-mono)" }}
               >
                 Dates

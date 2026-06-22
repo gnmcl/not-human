@@ -14,6 +14,7 @@ import {
   FaYoutube,
 } from "react-icons/fa6";
 import { SiApplemusic, SiBeatport } from "react-icons/si";
+import { primaryButtonClass } from "@/components/buttonStyles";
 
 interface NavItem {
   label: string;
@@ -101,7 +102,7 @@ export default function TopNavbar() {
               target="_blank"
               rel="noopener noreferrer"
               onClick={() => setOpen(false)}
-              className="text-[0.7rem] tracking-[0.38em] text-zinc-300 uppercase hover:text-white transition-colors duration-300"
+              className={`${primaryButtonClass} min-w-[9rem]`}
               style={{ fontFamily: "var(--font-geist-mono)" }}
             >
               Listen
@@ -109,7 +110,7 @@ export default function TopNavbar() {
             <a
               href="#dates"
               onClick={() => setOpen(false)}
-              className="text-[0.7rem] tracking-[0.38em] text-zinc-300 uppercase hover:text-white transition-colors duration-300"
+              className={`${primaryButtonClass} min-w-[9rem]`}
               style={{ fontFamily: "var(--font-geist-mono)" }}
             >
               Dates

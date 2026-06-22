@@ -8,6 +8,7 @@ import {
   FaYoutube,
 } from "react-icons/fa6";
 import { SiApplemusic, SiBeatport } from "react-icons/si";
+import { primaryButtonClass } from "@/components/buttonStyles";
 
 const legalLinks = [
   { label: "Privacy Policy", href: "/privacy-policy" },
@@ -39,7 +40,7 @@ export default function Footer() {
         <div className="flex flex-col items-center gap-3">
           <Link
             href="/contacts"
-            className="text-[0.72rem] tracking-[0.44em] text-zinc-200 uppercase transition-colors duration-300 hover:text-white sm:text-[0.82rem] sm:tracking-[0.5em]"
+            className={primaryButtonClass}
           >
             BOOKING &amp; CONTACTS
           </Link>

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import InteractiveMeshBackground from "@/components/InteractiveMeshBackground";
+import { primaryButtonClass } from "@/components/buttonStyles";
 
 export const metadata = {
   title: "Booking & Contacts — Not Human",
@@ -40,7 +41,7 @@ export default function ContactsPage() {
 
         <Link
           href="/"
-          className="mt-14 inline-flex items-center justify-center border border-zinc-700 px-8 py-3 text-[0.6rem] tracking-[0.35em] text-zinc-400 uppercase transition-all duration-500 hover:border-zinc-400 hover:text-zinc-100 sm:px-10 sm:py-3.5 sm:text-[0.65rem] sm:tracking-[0.4em]"
+          className={`${primaryButtonClass} mt-14`}
           style={{ fontFamily: "var(--font-geist-mono)" }}
         >
           Back
