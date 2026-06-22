@@ -19,7 +19,7 @@ export default function DatesSection({ id = "dates" }: DatesSectionProps) {
         className="text-[2.4rem] tracking-[0.18em] text-zinc-200 uppercase sm:text-[3.4rem] sm:tracking-[0.22em]"
         style={{ fontFamily: "var(--font-geist-sans)" }}
       >
-        COMING SOON
+        COMING SOON.
       </h2>
     </section>
   );
