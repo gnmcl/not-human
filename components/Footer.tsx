@@ -43,7 +43,6 @@ export default function Footer() {
           >
             BOOKING &amp; CONTACTS
           </Link>
-          <div className="h-px w-10 bg-zinc-700" />
         </div>
 
         {/* Social icons — "Join my world:" label left on desktop, above on mobile */}
@@ -68,13 +67,13 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Divider */}
-        <div className="h-px w-full bg-zinc-800" />
-
         {/* Copyright */}
         <p className="text-center text-[0.52rem] tracking-[0.3em] text-zinc-600 uppercase select-none">
           &copy; {new Date().getFullYear()} Not Human. All rights reserved.
         </p>
+
+        {/* Divider */}
+        <div className="h-px w-full bg-zinc-800" />
 
         {/* Legal links — one row on desktop, column on mobile */}
         <nav
