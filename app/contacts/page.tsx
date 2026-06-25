@@ -28,12 +28,9 @@ export default function ContactsPage() {
         >
           GET IN TOUCH
         </h1>
-
-        <div className="mt-2 h-px w-16 bg-zinc-600 sm:w-24" />
-
         <a
           href="mailto:booking@nothumanworld.com"
-          className="mt-10 text-[0.65rem] tracking-[0.35em] text-zinc-400 uppercase transition-colors duration-300 hover:text-zinc-100 sm:text-[0.72rem]"
+          className="mt-10 text-[0.75rem] tracking-[0.35em] text-zinc-400 uppercase transition-colors duration-300 hover:text-zinc-100 sm:text-[0.82rem]"
           style={{ fontFamily: "var(--font-geist-mono)" }}
         >
           booking@nothumanworld.com

@@ -43,13 +43,13 @@ export default function YouTubeHeroSection({ id, videoId }: YouTubeHeroSectionPr
       id={id}
       ref={sectionRef}
       data-scroll-section
-      className="relative z-10 min-h-screen overflow-hidden bg-black"
+      className="relative z-12 min-h-[72svh] overflow-hidden bg-black sm:min-h-screen"
       aria-label="Featured video"
     >
       <div className="pointer-events-none absolute inset-0 z-10 bg-black/20" aria-hidden="true" />
 
-      <div className="absolute inset-0 z-0 flex items-center justify-center p-3 sm:p-6">
-        <div className="relative aspect-video w-[80%] overflow-hidden rounded-md border border-zinc-700/60 bg-black sm:h-[80%] sm:w-[80%] sm:aspect-auto">
+      <div className="absolute inset-0 z-0 flex items-center justify-center px-3 py-4 sm:p-6">
+        <div className="relative aspect-video w-[100%] overflow-hidden rounded-md border border-zinc-700/60 bg-black sm:h-[80%] sm:w-[80%] sm:aspect-auto">
           {!shouldLoadVideo && (
             <Image
               src={previewUrl}
@@ -75,7 +75,7 @@ export default function YouTubeHeroSection({ id, videoId }: YouTubeHeroSectionPr
         </div>
       </div>
 
-      <div className="pointer-events-none relative z-20 flex min-h-screen flex-col items-center justify-end px-4 pb-12 text-center sm:pb-16">
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 flex flex-col items-center justify-end px-4 pb-8 text-center sm:pb-16">
         <a
           href="https://www.youtube.com/@nothumanworld"
           target="_blank"

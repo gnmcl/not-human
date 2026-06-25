@@ -6,6 +6,7 @@ import SectionDotNavigator from "@/components/SectionDotNavigator";
 import { primaryButtonClass } from "@/components/buttonStyles";
 import TopNavbar from "@/components/TopNavbar";
 import YouTubeHeroSection from "@/components/YouTubeHeroSection";
+import BioSection from "@/components/BioSection";
 
 const sections = [
   { id: "hero", label: "Hero" },
@@ -52,7 +53,7 @@ export default function Home() {
             >
               &quot;A LIVING SIGNAL FROM THE EDGE OF THE MACHINE&quot;
             </div>
-
+      
             <div className="mt-9 flex w-full max-w-xs flex-col gap-3 sm:mt-14 sm:max-w-none sm:flex-row sm:justify-center sm:gap-10">
               <a
                 href="https://linktr.ee/nothumanworld?utm_source=linktree_profile_share&ltsid=ef4c89df-dcdc-4645-84fa-7719000856c3"
@@ -70,10 +71,9 @@ export default function Home() {
               </a>
             </div>
           </div>
-
         </section>
-
         <YouTubeHeroSection id="video" videoId={FEATURED_VIDEO_ID} />
+        <BioSection id="bio" />
         <DatesSection id="dates" />
         <Footer />
       </main>

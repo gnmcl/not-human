@@ -18,14 +18,14 @@ const legalLinks = [
 ];
 
 const allSocialItems = [
-  { label: "Instagram", href: "https://www.instagram.com/nothumanworld/", Icon: FaInstagram },
-  { label: "Facebook", href: "https://www.facebook.com/nothumanworld", Icon: FaFacebookF },
-  { label: "X", href: "https://x.com/nothumanworld", Icon: FaXTwitter },
+  { label: "Instagram", href: "https://www.instagram.com/nothuman.ofc/", Icon: FaInstagram },
+  //{ label: "Facebook", href: "https://www.facebook.com/nothumanworld", Icon: FaFacebookF },
+  //{ label: "X", href: "https://x.com/nothumanworld", Icon: FaXTwitter },
   { label: "SoundCloud", href: "https://soundcloud.com/nothumanworld", Icon: FaSoundcloud },
-  { label: "Spotify", href: "https://open.spotify.com/search/not%20human", Icon: FaSpotify },
+  //{ label: "Spotify", href: "https://open.spotify.com/search/not%20human", Icon: FaSpotify },
   { label: "YouTube", href: "https://www.youtube.com/@nothumanworld", Icon: FaYoutube },
-  { label: "Apple Music", href: "https://music.apple.com/us/search?term=not%20human", Icon: SiApplemusic },
-  { label: "Beatport", href: "https://www.beatport.com/search?q=not%20human", Icon: SiBeatport },
+  //{ label: "Apple Music", href: "https://music.apple.com/us/search?term=not%20human", Icon: SiApplemusic },
+  //{ label: "Beatport", href: "https://www.beatport.com/search?q=not%20human", Icon: SiBeatport },
 ];
 
 export default function Footer() {
