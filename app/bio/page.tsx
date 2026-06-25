@@ -48,7 +48,7 @@ export default function BioPage() {
           </p>
 
           <p className="text-[0.7rem] leading-[2.1] tracking-[0.04em] text-zinc-500 sm:text-[0.75rem]">
-            The artist behind the project began his production journey in 2017, gradually developing a sound shaped by years of experimentation, musical exploration and involvement within the electronic music scene. Prior to the launch of NOT HUMAN, he was part of a melodic techno duo that held a resident position at a renowned Italian club, sharing line-ups with respected artists such as Markantonio, David Allendes, Luigi Madonna and other notable names in contemporary electronic music.
+            The artist behind the project began his production journey in 2017, gradually developing a sound shaped by years of experimentation, musical exploration and involvement within the electronic music scene. Prior to the launch of NOT HUMAN, he was part of a melodic techno duo that held a resident position at a renowned Italian club, sharing line-ups with respected artists such as Markantonio, Francisco Allendes, Luigi Madonna and other notable names in contemporary electronic music.
           </p>
 
           <p className="text-[0.7rem] leading-[2.1] tracking-[0.04em] text-zinc-500 sm:text-[0.75rem]">
