@@ -15,6 +15,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Not Human",
   description: "A living signal from the edge of the machine",
+  icons: {
+    icon: "/white.ico",
+  },
 };
 
 export default function RootLayout({
