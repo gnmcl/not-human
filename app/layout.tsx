@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   title: "Not Human",
   description: "A living signal from the edge of the machine",
   icons: {
-    icon: "/white.ico",
+    icon: "/WHITE.ico",
   },
 };
 
